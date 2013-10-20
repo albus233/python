@@ -8,11 +8,8 @@ from datetime import *
 from sqlalchemy.orm import *
 from flask.ext.superadmin import *
 from flask.ext.sqlalchemy import *
-import sys
-reload( sys )
-sys.setdefaultencoding('utf-8')
 
-from app import *
+from app import app, db, User, entries, create
 
 DATABASE = 'flaskr.db'
 DEBUG = True
@@ -22,8 +19,7 @@ app = Flask(__name__)
 app.config.from_object(__name__)
 app.config.from_envvar('FLASKR_SETTINGS', silent=True)
 
-if User.query.filter_by(username = 'admin').first() != 'admin':
-    create()
+create()
 
 @app.route('/')
 def show_entries():

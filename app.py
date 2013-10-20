@@ -3,7 +3,7 @@ from flask.ext.sqlalchemy import SQLAlchemy
 from flask.ext.superadmin import Admin
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////flaskr.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///flaskr.db'
 db = SQLAlchemy(app)
 
 class User(db.Model):
@@ -32,6 +32,7 @@ class entries(db.Model):
 
 def create():
     db.create_all()
-    admin = User('admin', 'albus233')
-    db.session.add(admin)
+    if User.query.filter_by(username='admin').first() == None:
+        admin = User('admin', 'albus233')
+        db.session.add(admin)
     db.session.commit()

@@ -22,15 +22,13 @@ class entries(db.Model):
     id = db.Column(db.Integer, primary_key = True)
     title = db.Column(db.String(120), nullable = False)
     text = db.Column(db.Text, nullable = False)
-    pub_date = db.Column(db.DateTime)
 
-    def __init__(self, title, text, pub_date):
+    def __init__(self, title, text):
         self.title = title
         self.text = text
-        self.pub_date = pub_date
 
     def __repr__(self):
-        return '<User %r>' %self.title
+        return '<entries %r>' %self.title
 
 def create():
     db.create_all()

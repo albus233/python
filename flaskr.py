@@ -1,11 +1,9 @@
 from __future__ import with_statement
 from contextlib import closing
 import sqlite3
-from sqlite3 import *
-from flask import Flask, request, session, g, redirect, url_for, abort, render_template, flash
-from sqlalchemy import *
+from flask import Flask, request, session, g, redirect, url_for, abort
+from flask import render_template, flash
 from datetime import datetime
-from sqlalchemy.orm import *
 from flask.ext.sqlalchemy import SQLAlchemy
 
 from app import app, db, User, entries, create
@@ -23,7 +21,6 @@ user = 'None'
 
 @app.route('/')
 def show_entries():
-#    entriess = entries.query.all().order_by(entries.id.desc())[:8]
     cur = db.session.execute('select title, text from entries order by id desc')
     entries = [dict(title=row[0], text=row[1]) for row in cur.fetchall()]
     return render_template('show_entries.html', entries=entries)
@@ -41,7 +38,7 @@ def add_entry():
 
     
 @app.route('/login', methods=['GET', 'POST'])
-def login():  
+def login():
     error = None
     if request.method == 'POST':
         username = request.form["username"]

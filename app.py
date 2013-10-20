@@ -22,10 +22,12 @@ class entries(db.Model):
     id = db.Column(db.Integer, primary_key = True)
     title = db.Column(db.String(120), nullable = False)
     text = db.Column(db.Text, nullable = False)
+    publisher = db.Column(db.String(50), nullable = False)
 
-    def __init__(self, title, text):
+    def __init__(self, title, text, publisher):
         self.title = title
         self.text = text
+        self.publisher = publisher
 
     def __repr__(self):
         return '<entries %r>' %self.title

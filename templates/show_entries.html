@@ -18,8 +18,8 @@
 </form>
 <a>If you want to change the password, Click </a><a href="{{ ('r') }}">here</a>
 {% endif %}
-<ul class=entries>
-{% for entry in entries %}
+<ul class=Entries>
+{% for entry in Entries %}
 <li><h2>{{ entry.title }}</h2>{{ entry.text|safe }}
 {% else %}
 <li><em>Unbelievable. No entries here so far</em>

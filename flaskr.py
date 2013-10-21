@@ -2,7 +2,7 @@ from __future__ import with_statement
 from flask import request, session, redirect, url_for, abort
 from flask import render_template, flash
 
-from app import app, db, User, Entries, create
+from app import app, db, User, Entry, create
 
 DATABASE = 'flaskr.db'
 DEBUG = True
@@ -21,24 +21,24 @@ def index():
     session.pop('logged_in', None)
     user = 'None'
     cur = db.session.execute('select title, text from\
-                             Entries order by id desc')
+                             Entry order by id desc')
     entriess = [dict(title=row[0], text=row[1]) for row in cur.fetchall()]
-    return render_template('show_entries.html', Entries=entriess)
+    return render_template('show_entries.html', Entry=entriess)
 
 
 @app.route('/show')
 def show_entries():
     cur = db.session.execute('select title, text from\
-                             Entries order by id desc')
+                             Entry order by id desc')
     entriess = [dict(title=row[0], text=row[1]) for row in cur.fetchall()]
-    return render_template('show_entries.html', Entries=entriess)
+    return render_template('show_entries.html', Entry=entriess)
 
 
 @app.route('/add', methods=['POST'])
 def add_entry():
     if not session.get('logged_in'):
         abort(401)
-    t = Entries(request.form['title'], request.form['text'], user)
+    t = Entry(request.form['title'], request.form['text'], user)
     db.session.add(t)
     db.session.commit()
     flash('New entry was successfully posted')
@@ -77,7 +77,7 @@ def logout():
 @app.route('/delete', methods=['POST'])
 def delete():
     tit = request.form["delete"]
-    owner = Entries.query.filter_by(title=tit).first()
+    owner = Entry.query.filter_by(title=tit).first()
     if user == 'admin':
         db.session.delete(owner)
         db.session.commit()

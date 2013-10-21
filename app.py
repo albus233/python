@@ -19,7 +19,7 @@ class User(db.Model):
         return '<User %r>' % self.username
 
 
-class Entries(db.Model):
+class Entry(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(120), nullable=False)
     text = db.Column(db.Text, nullable=False)

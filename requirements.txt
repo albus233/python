@@ -1,0 +1,14 @@
+Flask-SQLAlchemy==1.0
+flake8==2.0
+flask==0.10.1
+flask-superadmin==1.5.2
+flask-wtf==0.9.3
+itsdangerous==0.23
+jinja2==2.7.1
+markupsafe==0.18
+mccabe==0.2.1
+pep8==1.4.6
+pyflakes==0.7.3
+sqlalchemy==0.8.2
+werkzeug==0.9.4
+wtforms==1.0.5

@@ -77,7 +77,7 @@ def logout():
 @app.route('/delete', methods=['POST'])
 def delete():
     tit = request.form["delete"]
-    owner = entries.query.filter_by(title=tit).first()
+    owner = Entries.query.filter_by(title=tit).first()
     if user == 'admin':
         db.session.delete(owner)
         db.session.commit()

@@ -1,42 +1,50 @@
 from __future__ import with_statement
-from contextlib import closing
-import sqlite3
-from flask import Flask, request, session, g, redirect, url_for, abort
+from flask import request, session, redirect, url_for, abort
 from flask import render_template, flash
-from datetime import datetime
-from flask.ext.sqlalchemy import SQLAlchemy
 
-from app import app, db, User, entries, create
+from app import app, db, User, Entries, create
 
 DATABASE = 'flaskr.db'
 DEBUG = True
 SECRET_KEY = 'development key'
 
-app = Flask(__name__)
 app.config.from_object(__name__)
 app.config.from_envvar('FLASKR_SETTINGS', silent=True)
 
 create()
 user = 'None'
 
+
 @app.route('/')
+def index():
+    global user
+    session.pop('logged_in', None)
+    user = 'None'
+    cur = db.session.execute('select title, text from\
+                             Entries order by id desc')
+    entriess = [dict(title=row[0], text=row[1]) for row in cur.fetchall()]
+    return render_template('show_entries.html', Entries=entriess)
+
+
+@app.route('/show')
 def show_entries():
-    cur = db.session.execute('select title, text from entries order by id desc')
-    entries = [dict(title=row[0], text=row[1]) for row in cur.fetchall()]
-    return render_template('show_entries.html', entries=entries)
+    cur = db.session.execute('select title, text from\
+                             Entries order by id desc')
+    entriess = [dict(title=row[0], text=row[1]) for row in cur.fetchall()]
+    return render_template('show_entries.html', Entries=entriess)
+
 
 @app.route('/add', methods=['POST'])
 def add_entry():
-    global ans
     if not session.get('logged_in'):
         abort(401)
-    t = entries(request.form['title'], request.form['text'], user)
+    t = Entries(request.form['title'], request.form['text'], user)
     db.session.add(t)
     db.session.commit()
     flash('New entry was successfully posted')
     return redirect(url_for('show_entries'))
 
-    
+
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     error = None
@@ -56,6 +64,7 @@ def login():
             return redirect(url_for('login'))
     return render_template('login.html', error=error)
 
+
 @app.route('/logout')
 def logout():
     global user
@@ -64,10 +73,11 @@ def logout():
     flash('You were logged out')
     return redirect(url_for('show_entries'))
 
-@app.route('/delete', methods = ['POST'])
+
+@app.route('/delete', methods=['POST'])
 def delete():
     tit = request.form["delete"]
-    owner = entries.query.filter_by(title = tit).first()
+    owner = entries.query.filter_by(title=tit).first()
     if user == 'admin':
         db.session.delete(owner)
         db.session.commit()
@@ -78,15 +88,18 @@ def delete():
         flash('You don\' have permission for this')
     return redirect(url_for('show_entries'))
 
+
 @app.route('/rr')
 def rr():
     error = None
     return render_template('register.html', error=error)
 
+
 @app.route('/r')
 def r():
     error = None
     return render_template('repwd.html', error=error)
+
 
 @app.route('/repwd', methods=['POST'])
 def repwd():
@@ -95,7 +108,7 @@ def repwd():
         abort(401)
     else:
         password = request.form["password"]
-        u = User.query.filter_by(username = user).first_or_404()
+        u = User.query.filter_by(username=user).first_or_404()
         db.session.delete(u)
         db.session.commit()
         u = User(user, password)
@@ -106,7 +119,8 @@ def repwd():
         flash('Success!')
         return redirect(url_for('login'))
 
-@app.route('/register', methods=['GET','POST'])
+
+@app.route('/register', methods=['GET', 'POST'])
 def register():
     error = None
     if request.method == 'POST':
@@ -114,8 +128,11 @@ def register():
         password = request.form['password']
         repassword = request.form['repeatpassword']
         if repassword == password:
-            u = User.query.filter_by(username = username).first()
-            if u == None:
+            u = User.query.filter_by(username=username).first()
+            if username == 'None':
+                flash('You can\'t use this id')
+                return redirect(url_for('rr'))
+            if u is None:
                 t1 = User(username, password)
                 db.session.add(t1)
                 db.session.commit()
@@ -128,6 +145,7 @@ def register():
             flash('password is not same')
             return redirect(url_for('rr'))
     return render_template('register.html', error=error)
-    
+
+
 if __name__ == '__main__':
     app.run(debug=True)

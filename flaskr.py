@@ -1,7 +1,6 @@
 from __future__ import with_statement
 from flask import request, session, redirect, url_for, abort
 from flask import render_template, flash
-
 from app import app, db, User, Entry, create
 
 DATABASE = 'flaskr.db'
@@ -12,33 +11,26 @@ app.config.from_object(__name__)
 app.config.from_envvar('FLASKR_SETTINGS', silent=True)
 
 create()
-user = 'None'
-
 
 @app.route('/')
 def index():
-    global user
-    session.pop('logged_in', None)
-    user = 'None'
-    cur = db.session.execute('select title, text from\
-                             Entry order by id desc')
-    entriess = [dict(title=row[0], text=row[1]) for row in cur.fetchall()]
-    return render_template('show_entries.html', Entry=entriess)
+    if 'username' in session:
+        del session['username']
+    entries = Entry.query.all()
+    return render_template('show_entries.html', entries=entries)
 
 
 @app.route('/show')
 def show_entries():
-    cur = db.session.execute('select title, text from\
-                             Entry order by id desc')
-    entriess = [dict(title=row[0], text=row[1]) for row in cur.fetchall()]
+    entries = Entry.query.all()
     return render_template('show_entries.html', Entry=entriess)
 
 
 @app.route('/add', methods=['POST'])
 def add_entry():
-    if not session.get('logged_in'):
-        abort(401)
-    t = Entry(request.form['title'], request.form['text'], user)
+    if 'username' not in session:
+        return redirect(url_for('login'))
+    t = Entry(request.form['title'], request.form['text'], session["username"])
     db.session.add(t)
     db.session.commit()
     flash('New entry was successfully posted')
@@ -49,15 +41,14 @@ def add_entry():
 def login():
     error = None
     if request.method == 'POST':
+        if 'username' in session:
+            del session['username']
         username = request.form["username"]
         password = request.form["password"]
         u = User.query.filter_by(username=username).first_or_404()
         if u.password == password:
-            session['logged_in'] = True
-            global user
-            user = username
+            session['username'] = request.form['username']
             flash('You were logged in!')
-            flash(user)
             return redirect(url_for('show_entries'))
         else:
             flash('Wrong password')
@@ -67,9 +58,8 @@ def login():
 
 @app.route('/logout')
 def logout():
-    global user
-    session.pop('logged_in', None)
-    user = 'None'
+    if 'username' in session:
+        del session['username']
     flash('You were logged out')
     return redirect(url_for('show_entries'))
 
@@ -78,10 +68,10 @@ def logout():
 def delete():
     tit = request.form["delete"]
     owner = Entry.query.filter_by(title=tit).first()
-    if user == 'admin':
+    if session["username"] == 'admin':
         db.session.delete(owner)
         db.session.commit()
-    elif user == owner.publisher:
+    elif session["username"] == owner.publisher:
         db.session.delete(owner)
         db.session.commit()
     else:
@@ -103,19 +93,18 @@ def r():
 
 @app.route('/repwd', methods=['POST'])
 def repwd():
-    global user
-    if not session.get('logged_in'):
-        abort(401)
+    if 'username' not in session:
+        return redirect(url_for('login'))
     else:
         password = request.form["password"]
-        u = User.query.filter_by(username=user).first_or_404()
+        u = User.query.filter_by(username=session["username"]).first_or_404()
         db.session.delete(u)
         db.session.commit()
-        u = User(user, password)
+        u = User(session["username"], password)
         db.session.add(u)
         db.session.commit()
-        session.pop('logged_in', None)
-        user = 'None'
+        if 'username' in session:
+            del session['username']
         flash('Success!')
         return redirect(url_for('login'))
 

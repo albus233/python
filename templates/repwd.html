@@ -1,6 +1,6 @@
 {% extends "layout.html" %}
 {% block body %}
-{% if session.logged_in %}
+{% if session.username %}
 <form action="{{ url_for('repwd') }}" method=post>
 <dd></dd>
 <dd><a>Input your new password:</a>

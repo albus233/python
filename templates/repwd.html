@@ -1,4 +1,10 @@
-{% extends "layout.html" %}
+<style type="text/css">
+<!--
+body {
+	background-color: #C4F9FF;
+}
+-->
+</style>{% extends "layout.html" %}
 {% block body %}
 {% if session.username %}
 <form action="{{ url_for('repwd') }}" method=post>

@@ -1,16 +1,57 @@
 from __future__ import with_statement
-from flask import request, session, redirect, url_for, abort
+from flask import Flask, request, session, redirect, url_for
 from flask import render_template, flash
-from app import app, db, User, Entry, create
+from flask.ext.sqlalchemy import SQLAlchemy
 
 DATABASE = 'flaskr.db'
 DEBUG = True
 SECRET_KEY = 'development key'
 
+app = Flask(__name__)
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///flaskr.db'
+db = SQLAlchemy(app)
 app.config.from_object(__name__)
 app.config.from_envvar('FLASKR_SETTINGS', silent=True)
 
+
+class User(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(50), nullable=False)
+    password = db.Column(db.String(50), nullable=False)
+
+    def __init__(self, username, password):
+        self.username = username
+        self.password = password
+
+    def __repr__(self):
+        return '<User %r>' % self.username
+
+
+class Entry(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(120), nullable=False)
+    text = db.Column(db.Text, nullable=False)
+    publisher = db.Column(db.String(50), nullable=False)
+
+    def __init__(self, title, text, publisher):
+        self.title = title
+        self.text = text
+        self.publisher = publisher
+
+    def __repr__(self):
+        return '<entries %r>' % self.title
+
+
+def create():
+    db.create_all()
+    if User.query.filter_by(username='admin').first() is None:
+        admin = User('admin', 'albus233')
+        db.session.add(admin)
+    db.session.commit()
+
+
 create()
+
 
 @app.route('/')
 def index():
@@ -23,7 +64,7 @@ def index():
 @app.route('/show')
 def show_entries():
     entries = Entry.query.all()
-    return render_template('show_entries.html', Entry=entriess)
+    return render_template('show_entries.html', entries=entries)
 
 
 @app.route('/add', methods=['POST'])
@@ -67,7 +108,7 @@ def logout():
 @app.route('/delete', methods=['POST'])
 def delete():
     tit = request.form["delete"]
-    owner = Entry.query.filter_by(title=tit).first()
+    owner = Entry.query.filter_by(title=tit).first_or_404()
     if session["username"] == 'admin':
         db.session.delete(owner)
         db.session.commit()

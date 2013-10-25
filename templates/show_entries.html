@@ -1,4 +1,10 @@
-{% extends "layout.html" %}
+<style type="text/css">
+<!--
+body {
+	background-color: #C4F9FF;
+}
+-->
+</style>{% extends "layout.html" %}
 {% block body %}
 {% if session.username %}
 <form action="{{ url_for('add_entry') }}" method=post class=add-entry>
@@ -20,7 +26,7 @@
 {% endif %}
 <ul class=entries>
 {% for entry in entries %}
-<li><h2>{{ entry.title }}</h2>{{ entry.text|safe }}
+<li><h2 class="">{{ entry.title }}</h2>{{ entry.text|safe }}
 {% else %}
 <li><em>Unbelievable. No entries here so far</em>
 {% endfor %}

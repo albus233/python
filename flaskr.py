@@ -50,9 +50,6 @@ def create():
     db.session.commit()
 
 
-create()
-
-
 @app.route('/')
 def index():
     if 'username' in session:
